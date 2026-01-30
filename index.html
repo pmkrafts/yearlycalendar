@@ -434,6 +434,98 @@
             background: #ff5252;
         }
 
+        .mobile-nav {
+            display: none;
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 100;
+        }
+
+        .joystick-container {
+            position: relative;
+            width: 120px;
+            height: 120px;
+            background: var(--bg-secondary);
+            border-radius: 50%;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .joystick-button {
+            width: 60px;
+            height: 60px;
+            background: var(--accent-strong);
+            border-radius: 50%;
+            border: none;
+            cursor: pointer;
+            transition: all 0.1s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            touch-action: none;
+            user-select: none;
+        }
+
+        .joystick-button:active {
+            transform: scale(0.95);
+        }
+
+        .cursor-dot {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background: var(--accent-strong);
+            border: 3px solid var(--bg-primary);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 1000;
+            transform: translate(-50%, -50%);
+            box-shadow: 0 0 20px rgba(177, 101, 43, 0.8);
+            animation: pulse 1.5s ease-in-out infinite;
+            display: none;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                transform: translate(-50%, -50%) scale(1);
+                opacity: 1;
+            }
+
+            50% {
+                transform: translate(-50%, -50%) scale(1.2);
+                opacity: 0.8;
+            }
+        }
+
+        .cursor-dot.active {
+            display: block;
+        }
+
+        .nav-instructions {
+            position: fixed;
+            bottom: 160px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--bg-secondary);
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            color: var(--text-color);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            pointer-events: none;
+            white-space: nowrap;
+        }
+
+        .nav-instructions.show {
+            opacity: 1;
+        }
+
         @media (max-width: 768px) {
             .header h1 {
                 font-size: 2rem;
@@ -441,6 +533,7 @@
 
             .days-container {
                 padding: 20px;
+                margin-bottom: 180px;
             }
 
             .stats-container {
@@ -453,6 +546,19 @@
 
             .stat-number {
                 font-size: 2.5rem;
+            }
+
+            .mobile-nav {
+                display: block;
+            }
+
+            .days-grid {
+                gap: 8px;
+            }
+
+            .day-dot {
+                width: 12px;
+                height: 12px;
             }
         }
     </style>
@@ -495,6 +601,15 @@
     <div class="year-container">
         <div class="days-container">
             <div class="days-grid" id="yearGrid"></div>
+        </div>
+    </div>
+
+    <div class="cursor-dot" id="cursorDot"></div>
+    <div class="nav-instructions" id="navInstructions">Hold & drag to navigate</div>
+
+    <div class="mobile-nav">
+        <div class="joystick-container">
+            <div class="joystick-button" id="joystick"></div>
         </div>
     </div>
 
@@ -801,6 +916,7 @@
         loadTheme();
         initDB().then(() => {
             createYearGrid();
+            initJoystick();
         });
 
         // Auto-save every 30 seconds if data exists
@@ -809,6 +925,124 @@
                 localStorage.setItem('yearTrackerData', JSON.stringify(notesData));
             }
         }, 30000);
+
+        // Joystick Navigation for Mobile
+        function initJoystick() {
+            const joystick = document.getElementById('joystick');
+            const cursorDot = document.getElementById('cursorDot');
+            const navInstructions = document.getElementById('navInstructions');
+            const yearGrid = document.getElementById('yearGrid');
+
+            let isActive = false;
+            let currentX = window.innerWidth / 2;
+            let currentY = window.innerHeight / 2;
+            let animationFrame;
+            let velocityX = 0;
+            let velocityY = 0;
+
+            // Show instructions on first touch
+            let hasShownInstructions = localStorage.getItem('hasShownNavInstructions');
+
+            function showInstructions() {
+                if (!hasShownInstructions) {
+                    navInstructions.classList.add('show');
+                    setTimeout(() => {
+                        navInstructions.classList.remove('show');
+                        localStorage.setItem('hasShownNavInstructions', 'true');
+                    }, 3000);
+                }
+            }
+
+            joystick.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                isActive = true;
+                cursorDot.classList.add('active');
+
+                // Position cursor at center of screen initially
+                const gridRect = yearGrid.getBoundingClientRect();
+                currentX = gridRect.left + gridRect.width / 2;
+                currentY = gridRect.top + gridRect.height / 2;
+
+                cursorDot.style.left = currentX + 'px';
+                cursorDot.style.top = currentY + 'px';
+
+                showInstructions();
+                startMovement();
+            });
+
+            joystick.addEventListener('touchmove', (e) => {
+                if (!isActive) return;
+                e.preventDefault();
+
+                const touch = e.touches[0];
+                const joystickRect = joystick.getBoundingClientRect();
+                const centerX = joystickRect.left + joystickRect.width / 2;
+                const centerY = joystickRect.top + joystickRect.height / 2;
+
+                const deltaX = touch.clientX - centerX;
+                const deltaY = touch.clientY - centerY;
+
+                // Calculate velocity based on distance from center
+                const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+                const maxDistance = 60;
+                const speed = Math.min(distance / maxDistance, 1) * 8;
+
+                velocityX = (deltaX / distance) * speed;
+                velocityY = (deltaY / distance) * speed;
+            });
+
+            joystick.addEventListener('touchend', (e) => {
+                e.preventDefault();
+                isActive = false;
+                velocityX = 0;
+                velocityY = 0;
+
+                // Check if cursor is over a dot and click it
+                const element = document.elementFromPoint(currentX, currentY);
+                if (element && element.classList.contains('day-dot')) {
+                    element.click();
+                }
+
+                setTimeout(() => {
+                    cursorDot.classList.remove('active');
+                }, 300);
+
+                if (animationFrame) {
+                    cancelAnimationFrame(animationFrame);
+                }
+            });
+
+            function startMovement() {
+                function move() {
+                    if (!isActive) return;
+
+                    currentX += velocityX;
+                    currentY += velocityY;
+
+                    // Keep cursor within viewport
+                    currentX = Math.max(10, Math.min(window.innerWidth - 10, currentX));
+                    currentY = Math.max(10, Math.min(window.innerHeight - 10, currentY));
+
+                    cursorDot.style.left = currentX + 'px';
+                    cursorDot.style.top = currentY + 'px';
+
+                    // Highlight dot under cursor
+                    const element = document.elementFromPoint(currentX, currentY);
+                    document.querySelectorAll('.day-dot').forEach(dot => {
+                        dot.style.transform = '';
+                        dot.style.zIndex = '';
+                    });
+
+                    if (element && element.classList.contains('day-dot')) {
+                        element.style.transform = 'scale(2.5)';
+                        element.style.zIndex = '100';
+                    }
+
+                    animationFrame = requestAnimationFrame(move);
+                }
+                move();
+            }
+        }
     </script>
 </body>
 
