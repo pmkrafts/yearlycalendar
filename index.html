@@ -1,0 +1,815 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2026 Year Tracker</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-primary: #ffffff;
+            --bg-secondary: #ffdc34;
+            --accent-light: #c9a227;
+            --accent-strong: #b1652b;
+            --text-color: #3d2817;
+            --dot-default: #c9a227;
+            --dot-past: #b1652b;
+            --dot-hover: #ffdc34;
+        }
+
+        [data-theme="dark"] {
+            --bg-primary: #191919;
+            --bg-secondary: #2a2a2a;
+            --accent-light: #ffe14e;
+            --accent-strong: #ffd300;
+            --text-color: #fffceb;
+            --dot-default: #3a3a3a;
+            --dot-past: #ffd300;
+            --dot-hover: #ffe14e;
+        }
+
+        body {
+            background-color: var(--bg-primary);
+            color: var(--text-color);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            padding: 20px;
+            transition: background-color 0.3s ease, color 0.3s ease;
+            min-height: 100vh;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            font-weight: 300;
+            letter-spacing: 3px;
+            margin-bottom: 10px;
+        }
+
+        .controls {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 100;
+        }
+
+        .dropdown-container {
+            position: relative;
+        }
+
+        .theme-icon-btn {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--accent-strong);
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            position: relative;
+        }
+
+        .theme-icon-btn:hover {
+            transform: scale(1.1) rotate(20deg);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .theme-icon-btn.active {
+            transform: rotate(180deg);
+        }
+
+        .sun-icon {
+            display: inline-block;
+            animation: rotate 20s linear infinite;
+        }
+
+        .moon-icon {
+            display: inline-block;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes rotate {
+            from {
+                transform: rotate(0deg);
+            }
+
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        @keyframes float {
+
+            0%,
+            100% {
+                transform: translateY(0px);
+            }
+
+            50% {
+                transform: translateY(-5px);
+            }
+        }
+
+        [data-theme="dark"] .sun-icon {
+            display: none;
+        }
+
+        [data-theme="light"] .moon-icon {
+            display: none;
+        }
+
+        .dropdown-menu {
+            position: absolute;
+            top: 60px;
+            right: 0;
+            background: var(--bg-secondary);
+            border-radius: 15px;
+            padding: 10px;
+            min-width: 180px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px);
+            transition: all 0.3s ease;
+        }
+
+        .dropdown-menu.active {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        .dropdown-item {
+            background: transparent;
+            border: none;
+            padding: 12px 15px;
+            width: 100%;
+            text-align: left;
+            cursor: pointer;
+            font-size: 0.9rem;
+            color: var(--text-color);
+            border-radius: 8px;
+            transition: all 0.2s ease;
+            font-weight: 500;
+            display: block;
+        }
+
+        .dropdown-item:hover {
+            background: var(--accent-light);
+            transform: translateX(5px);
+        }
+
+        .file-input-label {
+            background: transparent;
+            border: none;
+            padding: 12px 15px;
+            width: 100%;
+            text-align: left;
+            cursor: pointer;
+            font-size: 0.9rem;
+            color: var(--text-color);
+            border-radius: 8px;
+            transition: all 0.2s ease;
+            font-weight: 500;
+            display: block;
+        }
+
+        .file-input-label:hover {
+            background: var(--accent-light);
+            transform: translateX(5px);
+        }
+
+        .stats-container {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            margin-bottom: 40px;
+            flex-wrap: wrap;
+        }
+
+        .stat-box {
+            text-align: center;
+            padding: 20px 40px;
+            background: var(--bg-secondary);
+            border-radius: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .stat-number {
+            font-size: 3rem;
+            font-weight: 300;
+            color: var(--accent-strong);
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            opacity: 0.8;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .year-container {
+            max-width: 700px;
+            width: 100%;
+            margin: 0 auto;
+        }
+
+        .days-container {
+            background: var(--bg-secondary);
+            border-radius: 20px;
+            padding: 40px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .days-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(10px, 10px));
+            gap: 6px;
+            justify-content: center;
+            max-width: 100%;
+        }
+
+        .day-dot {
+            width: 10px;
+            height: 10px;
+            background: var(--dot-default);
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            position: relative;
+            border: 1px solid transparent;
+        }
+
+        .day-dot:hover {
+            background: var(--dot-hover);
+            transform: scale(2);
+            border-color: var(--accent-strong);
+            z-index: 10;
+        }
+
+        .day-dot.past {
+            background: var(--dot-past);
+            box-shadow: 0 1px 3px rgba(255, 229, 104, 0.3);
+        }
+
+        [data-theme="dark"] .day-dot.past {
+            box-shadow: 0 1px 3px rgba(255, 211, 0, 0.4);
+        }
+
+        .day-dot.has-note::after {
+            content: '';
+            position: absolute;
+            top: 0px;
+            right: 0px;
+            width: 3px;
+            height: 3px;
+            background: var(--bg-primary);
+            border-radius: 50%;
+            border: 0.5px solid var(--accent-strong);
+        }
+
+        .day-tooltip {
+            position: absolute;
+            bottom: 120%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--text-color);
+            color: var(--bg-primary);
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 0.8rem;
+            white-space: nowrap;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s ease;
+            z-index: 10;
+        }
+
+        .day-dot:hover .day-tooltip {
+            opacity: 1;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            backdrop-filter: blur(5px);
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: var(--bg-primary);
+            padding: 30px;
+            border-radius: 20px;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            animation: modalSlideIn 0.3s ease;
+        }
+
+        @keyframes modalSlideIn {
+            from {
+                transform: translateY(-50px);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .modal-header h2 {
+            font-size: 1.5rem;
+            font-weight: 400;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--text-color);
+            opacity: 0.6;
+            transition: opacity 0.2s;
+        }
+
+        .close-btn:hover {
+            opacity: 1;
+        }
+
+        .modal-body textarea {
+            width: 100%;
+            min-height: 150px;
+            padding: 15px;
+            border: 2px solid var(--accent-light);
+            border-radius: 10px;
+            font-size: 1rem;
+            font-family: inherit;
+            resize: vertical;
+            background: var(--bg-secondary);
+            color: var(--text-color);
+            transition: border-color 0.3s ease;
+        }
+
+        .modal-body textarea:focus {
+            outline: none;
+            border-color: var(--accent-strong);
+        }
+
+        .modal-footer {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+            justify-content: flex-end;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.2s ease;
+            font-weight: 500;
+        }
+
+        .btn-primary {
+            background: var(--accent-strong);
+            color: var(--bg-primary);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .btn-secondary {
+            background: var(--bg-secondary);
+            color: var(--text-color);
+        }
+
+        .btn-secondary:hover {
+            background: var(--accent-light);
+        }
+
+        .btn-delete {
+            background: #ff6b6b;
+            color: white;
+        }
+
+        .btn-delete:hover {
+            background: #ff5252;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2rem;
+            }
+
+            .days-container {
+                padding: 20px;
+            }
+
+            .stats-container {
+                gap: 20px;
+            }
+
+            .stat-box {
+                padding: 15px 30px;
+            }
+
+            .stat-number {
+                font-size: 2.5rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="header">
+        <h1>2026</h1>
+    </div>
+
+    <div class="controls">
+        <div class="dropdown-container">
+            <button class="theme-icon-btn" onclick="toggleDropdown()">
+                <span class="sun-icon">☀️</span>
+                <span class="moon-icon">🌙</span>
+            </button>
+            <div class="dropdown-menu" id="dropdownMenu">
+                <button class="dropdown-item" onclick="toggleTheme(); closeDropdown();">Toggle Theme</button>
+                <button class="dropdown-item" onclick="exportData(); closeDropdown();">Export Data</button>
+                <label class="file-input-label">
+                    Import Data
+                    <input type="file" id="importFile" accept=".json" style="display: none;"
+                        onchange="importData(event); closeDropdown();">
+                </label>
+            </div>
+        </div>
+    </div>
+
+    <div class="stats-container">
+        <div class="stat-box">
+            <div class="stat-number" id="daysPassed">0</div>
+            <div class="stat-label">Days Passed</div>
+        </div>
+        <div class="stat-box">
+            <div class="stat-number" id="daysRemaining">0</div>
+            <div class="stat-label">Days Remaining</div>
+        </div>
+    </div>
+
+    <div class="year-container">
+        <div class="days-container">
+            <div class="days-grid" id="yearGrid"></div>
+        </div>
+    </div>
+
+    <div class="modal" id="noteModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalDate"></h2>
+                <button class="close-btn" onclick="closeModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <textarea id="noteText" placeholder="Write your note here..."></textarea>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-delete" onclick="deleteNote()" id="deleteBtn"
+                    style="display: none;">Delete</button>
+                <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+                <button class="btn btn-primary" onclick="saveNote()">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let notesData = {};
+        let fileHandle = null;
+        const currentDate = new Date();
+        const months = [
+            'January', 'February', 'March', 'April', 'May', 'June',
+            'July', 'August', 'September', 'October', 'November', 'December'
+        ];
+
+        // Initialize
+        async function initDB() {
+            // Try to load from localStorage as fallback
+            const savedData = localStorage.getItem('yearTrackerData');
+            if (savedData) {
+                notesData = JSON.parse(savedData);
+            }
+
+            // Check if File System Access API is supported
+            if ('showSaveFilePicker' in window) {
+                // Try to restore file handle
+                const savedHandle = localStorage.getItem('yearTrackerFileHandle');
+                if (savedHandle) {
+                    try {
+                        // Note: File handles can't be serialized, so we'll prompt user to select file again
+                        console.log('File handle stored, but needs reselection on page load');
+                    } catch (err) {
+                        console.log('Could not restore file handle');
+                    }
+                }
+            }
+        }
+
+        // Save data to file
+        async function saveToFile() {
+            try {
+                // Try File System Access API first
+                if ('showSaveFilePicker' in window) {
+                    if (!fileHandle) {
+                        fileHandle = await window.showSaveFilePicker({
+                            suggestedName: 'year-tracker-2026.json',
+                            types: [{
+                                description: 'Year Tracker Data',
+                                accept: { 'application/json': ['.json'] }
+                            }]
+                        });
+                    }
+
+                    const writable = await fileHandle.createWritable();
+                    await writable.write(JSON.stringify(notesData, null, 2));
+                    await writable.close();
+                } else {
+                    // Fallback to download
+                    const blob = new Blob([JSON.stringify(notesData, null, 2)], { type: 'application/json' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = 'year-tracker-2026.json';
+                    a.click();
+                    URL.revokeObjectURL(url);
+                }
+
+                // Also save to localStorage as backup
+                localStorage.setItem('yearTrackerData', JSON.stringify(notesData));
+            } catch (err) {
+                if (err.name !== 'AbortError') {
+                    console.error('Error saving file:', err);
+                    // Fallback to localStorage only
+                    localStorage.setItem('yearTrackerData', JSON.stringify(notesData));
+                }
+            }
+        }
+
+        // Load data from file
+        async function loadFromFile() {
+            try {
+                if ('showOpenFilePicker' in window) {
+                    const [handle] = await window.showOpenFilePicker({
+                        types: [{
+                            description: 'Year Tracker Data',
+                            accept: { 'application/json': ['.json'] }
+                        }]
+                    });
+
+                    const file = await handle.getFile();
+                    const content = await file.text();
+                    notesData = JSON.parse(content);
+                    fileHandle = handle;
+
+                    localStorage.setItem('yearTrackerData', JSON.stringify(notesData));
+                    createYearGrid();
+                }
+            } catch (err) {
+                if (err.name !== 'AbortError') {
+                    console.error('Error loading file:', err);
+                }
+            }
+        }
+
+        // Export data
+        function exportData() {
+            const blob = new Blob([JSON.stringify(notesData, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `year-tracker-2026-${new Date().toISOString().split('T')[0]}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        // Import data
+        function importData(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    try {
+                        notesData = JSON.parse(e.target.result);
+                        localStorage.setItem('yearTrackerData', JSON.stringify(notesData));
+                        createYearGrid();
+                        alert('Data imported successfully!');
+                    } catch (err) {
+                        alert('Error importing data. Please check the file format.');
+                    }
+                };
+                reader.readAsText(file);
+            }
+        }
+
+        function getDaysInMonth(month, year) {
+            return new Date(year, month + 1, 0).getDate();
+        }
+
+        function formatDate(year, month, day) {
+            return `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+        }
+
+        function createYearGrid() {
+            const yearGrid = document.getElementById('yearGrid');
+            yearGrid.innerHTML = '';
+
+            let daysPassed = 0;
+            let totalDays = 0;
+
+            for (let month = 0; month < 12; month++) {
+                const daysInMonth = getDaysInMonth(month, 2026);
+
+                // Add day dots
+                for (let day = 1; day <= daysInMonth; day++) {
+                    totalDays++;
+                    const dayDot = document.createElement('div');
+                    dayDot.className = 'day-dot';
+
+                    const dateStr = formatDate(2026, month, day);
+                    const currentDateObj = new Date(2026, month, day);
+
+                    // Check if day is in the past
+                    if (currentDateObj < currentDate) {
+                        dayDot.classList.add('past');
+                        daysPassed++;
+                    }
+
+                    // Check if day has a note
+                    if (notesData[dateStr]) {
+                        dayDot.classList.add('has-note');
+                    }
+
+                    // Add tooltip
+                    const tooltip = document.createElement('div');
+                    tooltip.className = 'day-tooltip';
+                    tooltip.textContent = `${months[month]} ${day}`;
+                    dayDot.appendChild(tooltip);
+
+                    dayDot.onclick = () => openModal(dateStr);
+                    yearGrid.appendChild(dayDot);
+                }
+            }
+
+            // Update stats
+            document.getElementById('daysPassed').textContent = daysPassed;
+            document.getElementById('daysRemaining').textContent = totalDays - daysPassed;
+        }
+
+        let selectedDate = null;
+
+        function getNote(date) {
+            return notesData[date] || '';
+        }
+
+        function openModal(date) {
+            selectedDate = date;
+            const modal = document.getElementById('noteModal');
+            const modalDate = document.getElementById('modalDate');
+            const noteText = document.getElementById('noteText');
+            const deleteBtn = document.getElementById('deleteBtn');
+
+            const [year, month, day] = date.split('-');
+            modalDate.textContent = `${months[parseInt(month) - 1]} ${parseInt(day)}, ${year}`;
+
+            const note = getNote(date);
+            noteText.value = note;
+
+            if (note) {
+                deleteBtn.style.display = 'block';
+            } else {
+                deleteBtn.style.display = 'none';
+            }
+
+            modal.classList.add('active');
+            noteText.focus();
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('noteModal');
+            modal.classList.remove('active');
+            selectedDate = null;
+        }
+
+        async function saveNote() {
+            const noteText = document.getElementById('noteText').value.trim();
+
+            if (noteText) {
+                notesData[selectedDate] = noteText;
+            } else {
+                delete notesData[selectedDate];
+            }
+
+            await saveToFile();
+            closeModal();
+            createYearGrid();
+        }
+
+        async function deleteNote() {
+            delete notesData[selectedDate];
+            await saveToFile();
+            closeModal();
+            createYearGrid();
+        }
+
+        function toggleTheme() {
+            const body = document.body;
+            const currentTheme = body.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            body.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+        }
+
+        function toggleDropdown() {
+            const dropdown = document.getElementById('dropdownMenu');
+            const btn = document.querySelector('.theme-icon-btn');
+            dropdown.classList.toggle('active');
+            btn.classList.toggle('active');
+        }
+
+        function closeDropdown() {
+            const dropdown = document.getElementById('dropdownMenu');
+            const btn = document.querySelector('.theme-icon-btn');
+            dropdown.classList.remove('active');
+            btn.classList.remove('active');
+        }
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', (e) => {
+            const dropdown = document.querySelector('.dropdown-container');
+            if (!dropdown.contains(e.target)) {
+                closeDropdown();
+            }
+        });
+
+        // Load theme preference
+        function loadTheme() {
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            document.body.setAttribute('data-theme', savedTheme);
+        }
+
+        // Close modal when clicking outside
+        document.getElementById('noteModal').addEventListener('click', (e) => {
+            if (e.target.id === 'noteModal') {
+                closeModal();
+            }
+        });
+
+        // Initialize
+        loadTheme();
+        initDB().then(() => {
+            createYearGrid();
+        });
+
+        // Auto-save every 30 seconds if data exists
+        setInterval(() => {
+            if (Object.keys(notesData).length > 0) {
+                localStorage.setItem('yearTrackerData', JSON.stringify(notesData));
+            }
+        }, 30000);
+    </script>
+</body>
+
+</html>
