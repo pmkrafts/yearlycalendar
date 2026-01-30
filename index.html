@@ -59,7 +59,7 @@
             position: fixed;
             top: 20px;
             right: 20px;
-            z-index: 100;
+            z-index: 101;
         }
 
         .dropdown-container {
@@ -79,7 +79,6 @@
             font-size: 1.5rem;
             transition: all 0.3s ease;
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-            position: relative;
         }
 
         .theme-icon-btn:hover {
@@ -99,6 +98,7 @@
         .moon-icon {
             display: inline-block;
             animation: float 3s ease-in-out infinite;
+            filter: brightness(4) invert(0.3);
         }
 
         @keyframes rotate {
@@ -434,96 +434,164 @@
             background: #ff5252;
         }
 
-        .mobile-nav {
+        /* Date Picker Styles */
+        .fab-button {
             display: none;
             position: fixed;
             bottom: 30px;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 100;
-        }
-
-        .joystick-container {
-            position: relative;
-            width: 120px;
-            height: 120px;
-            background: var(--bg-secondary);
-            border-radius: 50%;
-            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .joystick-button {
+            right: 30px;
             width: 60px;
             height: 60px;
-            background: var(--accent-strong);
             border-radius: 50%;
+            background: var(--accent-strong);
             border: none;
             cursor: pointer;
-            transition: all 0.1s ease;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-            touch-action: none;
-            user-select: none;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            font-size: 1.5rem;
+            color: var(--bg-primary);
+            z-index: 99;
+            transition: all 0.3s ease;
         }
 
-        .joystick-button:active {
+        .fab-button:active {
             transform: scale(0.95);
         }
 
-        .cursor-dot {
-            position: absolute;
-            width: 20px;
-            height: 20px;
-            background: var(--accent-strong);
-            border: 3px solid var(--bg-primary);
-            border-radius: 50%;
-            pointer-events: none;
-            z-index: 1000;
-            transform: translate(-50%, -50%);
-            box-shadow: 0 0 20px rgba(177, 101, 43, 0.8);
-            animation: pulse 1.5s ease-in-out infinite;
+        .date-picker-overlay {
             display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 100;
         }
 
-        @keyframes pulse {
-
-            0%,
-            100% {
-                transform: translate(-50%, -50%) scale(1);
-                opacity: 1;
-            }
-
-            50% {
-                transform: translate(-50%, -50%) scale(1.2);
-                opacity: 0.8;
-            }
-        }
-
-        .cursor-dot.active {
+        .date-picker-overlay.active {
             display: block;
         }
 
-        .nav-instructions {
+        .date-picker-panel {
             position: fixed;
-            bottom: 160px;
-            left: 50%;
-            transform: translateX(-50%);
+            bottom: 0;
+            left: 0;
+            right: 0;
             background: var(--bg-secondary);
-            padding: 10px 20px;
-            border-radius: 20px;
-            font-size: 0.85rem;
-            color: var(--text-color);
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-            opacity: 0;
-            transition: opacity 0.3s ease;
-            pointer-events: none;
-            white-space: nowrap;
+            z-index: 101;
+            border-top-left-radius: 25px;
+            border-top-right-radius: 25px;
+            box-shadow: 0 -5px 30px rgba(0, 0, 0, 0.3);
+            transform: translateY(100%);
+            transition: transform 0.3s ease;
         }
 
-        .nav-instructions.show {
+        .date-picker-panel.active {
+            transform: translateY(0);
+        }
+
+        .date-picker-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--accent-light);
+        }
+
+        .picker-cancel,
+        .picker-done {
+            background: none;
+            border: none;
+            color: var(--accent-strong);
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            padding: 5px 10px;
+        }
+
+        .picker-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-color);
+        }
+
+        .date-picker-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 260px;
+            position: relative;
+            overflow: hidden;
+            padding: 0 20px;
+        }
+
+        .picker-column {
+            flex: 1;
+            height: 260px;
+            overflow-y: scroll;
+            scroll-snap-type: y mandatory;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: none;
+            position: relative;
+        }
+
+        .picker-column::-webkit-scrollbar {
+            display: none;
+        }
+
+        .picker-item {
+            height: 52px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            scroll-snap-align: center;
+            font-size: 1.1rem;
+            color: var(--text-color);
+            opacity: 0.3;
+            transition: all 0.2s ease;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .picker-item.selected {
             opacity: 1;
+            font-weight: 600;
+            font-size: 1.3rem;
+            color: var(--accent-strong);
+        }
+
+        .picker-highlight {
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 52px;
+            transform: translateY(-50%);
+            background: var(--accent-light);
+            opacity: 0.15;
+            pointer-events: none;
+            border-radius: 10px;
+            z-index: 1;
+        }
+
+        .picker-overlay-top,
+        .picker-overlay-bottom {
+            position: absolute;
+            left: 0;
+            right: 0;
+            height: 104px;
+            background: linear-gradient(to bottom, var(--bg-secondary), transparent);
+            pointer-events: none;
+            z-index: 2;
+        }
+
+        .picker-overlay-top {
+            top: 0;
+        }
+
+        .picker-overlay-bottom {
+            bottom: 0;
+            background: linear-gradient(to top, var(--bg-secondary), transparent);
         }
 
         @media (max-width: 768px) {
@@ -533,7 +601,7 @@
 
             .days-container {
                 padding: 20px;
-                margin-bottom: 180px;
+                margin-bottom: 100px;
             }
 
             .stats-container {
@@ -548,8 +616,10 @@
                 font-size: 2.5rem;
             }
 
-            .mobile-nav {
-                display: block;
+            .fab-button {
+                display: flex;
+                align-items: center;
+                justify-content: center;
             }
 
             .days-grid {
@@ -573,7 +643,7 @@
         <div class="dropdown-container">
             <button class="theme-icon-btn" onclick="toggleDropdown()">
                 <span class="sun-icon">☀️</span>
-                <span class="moon-icon">🌙</span>
+                <span class="moon-icon">🌑</span>
             </button>
             <div class="dropdown-menu" id="dropdownMenu">
                 <button class="dropdown-item" onclick="toggleTheme(); closeDropdown();">Toggle Theme</button>
@@ -604,14 +674,24 @@
         </div>
     </div>
 
-    <div class="cursor-dot" id="cursorDot"></div>
-    <div class="nav-instructions" id="navInstructions">Hold & drag to navigate</div>
+    <button class="fab-button" onclick="openDatePicker()">📅</button>
 
-    <!-- <div class="mobile-nav">
-        <div class="joystick-container">
-            <div class="joystick-button" id="joystick"></div>
+    <div class="date-picker-overlay" id="datePickerOverlay" onclick="closeDatePicker()"></div>
+    <div class="date-picker-panel" id="datePickerPanel">
+        <div class="date-picker-header">
+            <button class="picker-cancel" onclick="closeDatePicker()">Cancel</button>
+            <div class="picker-title">Select Date</div>
+            <button class="picker-done" onclick="selectDate()">Done</button>
         </div>
-    </div> -->
+        <div class="date-picker-container">
+            <div class="picker-highlight"></div>
+            <div class="picker-overlay-top"></div>
+            <div class="picker-overlay-bottom"></div>
+
+            <div class="picker-column" id="dayColumn"></div>
+            <div class="picker-column" id="monthColumn"></div>
+        </div>
+    </div>
 
     <div class="modal" id="noteModal">
         <div class="modal-content">
@@ -642,31 +722,14 @@
 
         // Initialize
         async function initDB() {
-            // Try to load from localStorage as fallback
             const savedData = localStorage.getItem('yearTrackerData');
             if (savedData) {
                 notesData = JSON.parse(savedData);
             }
-
-            // Check if File System Access API is supported
-            if ('showSaveFilePicker' in window) {
-                // Try to restore file handle
-                const savedHandle = localStorage.getItem('yearTrackerFileHandle');
-                if (savedHandle) {
-                    try {
-                        // Note: File handles can't be serialized, so we'll prompt user to select file again
-                        console.log('File handle stored, but needs reselection on page load');
-                    } catch (err) {
-                        console.log('Could not restore file handle');
-                    }
-                }
-            }
         }
 
-        // Save data to file
         async function saveToFile() {
             try {
-                // Try File System Access API first
                 if ('showSaveFilePicker' in window) {
                     if (!fileHandle) {
                         fileHandle = await window.showSaveFilePicker({
@@ -682,7 +745,6 @@
                     await writable.write(JSON.stringify(notesData, null, 2));
                     await writable.close();
                 } else {
-                    // Fallback to download
                     const blob = new Blob([JSON.stringify(notesData, null, 2)], { type: 'application/json' });
                     const url = URL.createObjectURL(blob);
                     const a = document.createElement('a');
@@ -692,44 +754,15 @@
                     URL.revokeObjectURL(url);
                 }
 
-                // Also save to localStorage as backup
                 localStorage.setItem('yearTrackerData', JSON.stringify(notesData));
             } catch (err) {
                 if (err.name !== 'AbortError') {
                     console.error('Error saving file:', err);
-                    // Fallback to localStorage only
                     localStorage.setItem('yearTrackerData', JSON.stringify(notesData));
                 }
             }
         }
 
-        // Load data from file
-        async function loadFromFile() {
-            try {
-                if ('showOpenFilePicker' in window) {
-                    const [handle] = await window.showOpenFilePicker({
-                        types: [{
-                            description: 'Year Tracker Data',
-                            accept: { 'application/json': ['.json'] }
-                        }]
-                    });
-
-                    const file = await handle.getFile();
-                    const content = await file.text();
-                    notesData = JSON.parse(content);
-                    fileHandle = handle;
-
-                    localStorage.setItem('yearTrackerData', JSON.stringify(notesData));
-                    createYearGrid();
-                }
-            } catch (err) {
-                if (err.name !== 'AbortError') {
-                    console.error('Error loading file:', err);
-                }
-            }
-        }
-
-        // Export data
         function exportData() {
             const blob = new Blob([JSON.stringify(notesData, null, 2)], { type: 'application/json' });
             const url = URL.createObjectURL(blob);
@@ -740,7 +773,6 @@
             URL.revokeObjectURL(url);
         }
 
-        // Import data
         function importData(event) {
             const file = event.target.files[0];
             if (file) {
@@ -777,7 +809,6 @@
             for (let month = 0; month < 12; month++) {
                 const daysInMonth = getDaysInMonth(month, 2026);
 
-                // Add day dots
                 for (let day = 1; day <= daysInMonth; day++) {
                     totalDays++;
                     const dayDot = document.createElement('div');
@@ -786,18 +817,15 @@
                     const dateStr = formatDate(2026, month, day);
                     const currentDateObj = new Date(2026, month, day);
 
-                    // Check if day is in the past
                     if (currentDateObj < currentDate) {
                         dayDot.classList.add('past');
                         daysPassed++;
                     }
 
-                    // Check if day has a note
                     if (notesData[dateStr]) {
                         dayDot.classList.add('has-note');
                     }
 
-                    // Add tooltip
                     const tooltip = document.createElement('div');
                     tooltip.className = 'day-tooltip';
                     tooltip.textContent = `${months[month]} ${day}`;
@@ -808,7 +836,6 @@
                 }
             }
 
-            // Update stats
             document.getElementById('daysPassed').textContent = daysPassed;
             document.getElementById('daysRemaining').textContent = totalDays - daysPassed;
         }
@@ -891,7 +918,6 @@
             btn.classList.remove('active');
         }
 
-        // Close dropdown when clicking outside
         document.addEventListener('click', (e) => {
             const dropdown = document.querySelector('.dropdown-container');
             if (!dropdown.contains(e.target)) {
@@ -899,33 +925,182 @@
             }
         });
 
-        // Load theme preference
         function loadTheme() {
             const savedTheme = localStorage.getItem('theme') || 'light';
             document.body.setAttribute('data-theme', savedTheme);
         }
 
-        // Close modal when clicking outside
         document.getElementById('noteModal').addEventListener('click', (e) => {
             if (e.target.id === 'noteModal') {
                 closeModal();
             }
         });
 
+        // Date Picker Functions
+        let pickerSelectedDay = 1;
+        let pickerSelectedMonth = 0;
+
+        function openDatePicker() {
+            const overlay = document.getElementById('datePickerOverlay');
+            const panel = document.getElementById('datePickerPanel');
+
+            // Initialize to current date
+            const today = new Date();
+            pickerSelectedDay = today.getDate();
+            pickerSelectedMonth = today.getMonth();
+
+            initializePicker();
+
+            overlay.classList.add('active');
+            panel.classList.add('active');
+        }
+
+        function closeDatePicker() {
+            const overlay = document.getElementById('datePickerOverlay');
+            const panel = document.getElementById('datePickerPanel');
+
+            overlay.classList.remove('active');
+            panel.classList.remove('active');
+        }
+
+        function initializePicker() {
+            const dayColumn = document.getElementById('dayColumn');
+            const monthColumn = document.getElementById('monthColumn');
+
+            // Clear columns
+            dayColumn.innerHTML = '';
+            monthColumn.innerHTML = '';
+
+            // Add padding items
+            for (let i = 0; i < 2; i++) {
+                dayColumn.appendChild(createPickerItem(''));
+                monthColumn.appendChild(createPickerItem(''));
+            }
+
+            // Add days (1-31)
+            for (let day = 1; day <= 31; day++) {
+                const item = createPickerItem(day);
+                item.dataset.value = day;
+                dayColumn.appendChild(item);
+            }
+
+            // Add months
+            months.forEach((month, index) => {
+                const item = createPickerItem(month);
+                item.dataset.value = index;
+                monthColumn.appendChild(item);
+            });
+
+            // Add padding items
+            for (let i = 0; i < 2; i++) {
+                dayColumn.appendChild(createPickerItem(''));
+                monthColumn.appendChild(createPickerItem(''));
+            }
+
+            // Set initial scroll positions
+            setTimeout(() => {
+                scrollToValue(dayColumn, pickerSelectedDay);
+                scrollToValue(monthColumn, pickerSelectedMonth);
+                updatePickerSelection();
+            }, 100);
+
+            // Add scroll listeners
+            dayColumn.addEventListener('scroll', () => updatePickerSelection());
+            monthColumn.addEventListener('scroll', () => updatePickerSelection());
+        }
+
+        function createPickerItem(value) {
+            const item = document.createElement('div');
+            item.className = 'picker-item';
+            item.textContent = value;
+            if (value !== '') {
+                item.onclick = () => {
+                    const column = item.parentElement;
+                    scrollToElement(column, item);
+                };
+            }
+            return item;
+        }
+
+        function scrollToValue(column, value) {
+            const items = column.querySelectorAll('.picker-item');
+            items.forEach(item => {
+                if (item.dataset.value == value) {
+                    scrollToElement(column, item);
+                }
+            });
+        }
+
+        function scrollToElement(column, element) {
+            const columnRect = column.getBoundingClientRect();
+            const elementRect = element.getBoundingClientRect();
+            const offset = elementRect.top - columnRect.top - (columnRect.height / 2) + (elementRect.height / 2);
+            column.scrollBy({ top: offset, behavior: 'smooth' });
+        }
+
+        function updatePickerSelection() {
+            const dayColumn = document.getElementById('dayColumn');
+            const monthColumn = document.getElementById('monthColumn');
+
+            updateColumnSelection(dayColumn);
+            updateColumnSelection(monthColumn);
+        }
+
+        function updateColumnSelection(column) {
+            const items = column.querySelectorAll('.picker-item');
+            const columnRect = column.getBoundingClientRect();
+            const centerY = columnRect.top + columnRect.height / 2;
+
+            let closestItem = null;
+            let closestDistance = Infinity;
+
+            items.forEach(item => {
+                item.classList.remove('selected');
+                const itemRect = item.getBoundingClientRect();
+                const itemCenterY = itemRect.top + itemRect.height / 2;
+                const distance = Math.abs(centerY - itemCenterY);
+
+                if (distance < closestDistance && item.dataset.value) {
+                    closestDistance = distance;
+                    closestItem = item;
+                }
+            });
+
+            if (closestItem) {
+                closestItem.classList.add('selected');
+
+                // Update selected values
+                if (column.id === 'dayColumn') {
+                    pickerSelectedDay = parseInt(closestItem.dataset.value);
+                } else if (column.id === 'monthColumn') {
+                    pickerSelectedMonth = parseInt(closestItem.dataset.value);
+                }
+            }
+        }
+
+        function selectDate() {
+            // Validate day for selected month
+            const daysInSelectedMonth = getDaysInMonth(pickerSelectedMonth, 2026);
+            if (pickerSelectedDay > daysInSelectedMonth) {
+                pickerSelectedDay = daysInSelectedMonth;
+            }
+
+            const dateStr = formatDate(2026, pickerSelectedMonth, pickerSelectedDay);
+            closeDatePicker();
+            openModal(dateStr);
+        }
+
         // Initialize
         loadTheme();
         initDB().then(() => {
             createYearGrid();
-            initJoystick();
         });
 
-        // Auto-save every 30 seconds if data exists
         setInterval(() => {
             if (Object.keys(notesData).length > 0) {
                 localStorage.setItem('yearTrackerData', JSON.stringify(notesData));
             }
         }, 30000);
-
     </script>
 </body>
 
