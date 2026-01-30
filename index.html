@@ -607,11 +607,11 @@
     <div class="cursor-dot" id="cursorDot"></div>
     <div class="nav-instructions" id="navInstructions">Hold & drag to navigate</div>
 
-    <div class="mobile-nav">
+    <!-- <div class="mobile-nav">
         <div class="joystick-container">
             <div class="joystick-button" id="joystick"></div>
         </div>
-    </div>
+    </div> -->
 
     <div class="modal" id="noteModal">
         <div class="modal-content">
@@ -926,123 +926,6 @@
             }
         }, 30000);
 
-        // Joystick Navigation for Mobile
-        function initJoystick() {
-            const joystick = document.getElementById('joystick');
-            const cursorDot = document.getElementById('cursorDot');
-            const navInstructions = document.getElementById('navInstructions');
-            const yearGrid = document.getElementById('yearGrid');
-
-            let isActive = false;
-            let currentX = window.innerWidth / 2;
-            let currentY = window.innerHeight / 2;
-            let animationFrame;
-            let velocityX = 0;
-            let velocityY = 0;
-
-            // Show instructions on first touch
-            let hasShownInstructions = localStorage.getItem('hasShownNavInstructions');
-
-            function showInstructions() {
-                if (!hasShownInstructions) {
-                    navInstructions.classList.add('show');
-                    setTimeout(() => {
-                        navInstructions.classList.remove('show');
-                        localStorage.setItem('hasShownNavInstructions', 'true');
-                    }, 3000);
-                }
-            }
-
-            joystick.addEventListener('touchstart', (e) => {
-                e.preventDefault();
-                isActive = true;
-                cursorDot.classList.add('active');
-
-                // Position cursor at center of screen initially
-                const gridRect = yearGrid.getBoundingClientRect();
-                currentX = gridRect.left + gridRect.width / 2;
-                currentY = gridRect.top + gridRect.height / 2;
-
-                cursorDot.style.left = currentX + 'px';
-                cursorDot.style.top = currentY + 'px';
-
-                showInstructions();
-                startMovement();
-            });
-
-            joystick.addEventListener('touchmove', (e) => {
-                if (!isActive) return;
-                e.preventDefault();
-
-                const touch = e.touches[0];
-                const joystickRect = joystick.getBoundingClientRect();
-                const centerX = joystickRect.left + joystickRect.width / 2;
-                const centerY = joystickRect.top + joystickRect.height / 2;
-
-                const deltaX = touch.clientX - centerX;
-                const deltaY = touch.clientY - centerY;
-
-                // Calculate velocity based on distance from center
-                const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
-                const maxDistance = 60;
-                const speed = Math.min(distance / maxDistance, 1) * 8;
-
-                velocityX = (deltaX / distance) * speed;
-                velocityY = (deltaY / distance) * speed;
-            });
-
-            joystick.addEventListener('touchend', (e) => {
-                e.preventDefault();
-                isActive = false;
-                velocityX = 0;
-                velocityY = 0;
-
-                // Check if cursor is over a dot and click it
-                const element = document.elementFromPoint(currentX, currentY);
-                if (element && element.classList.contains('day-dot')) {
-                    element.click();
-                }
-
-                setTimeout(() => {
-                    cursorDot.classList.remove('active');
-                }, 300);
-
-                if (animationFrame) {
-                    cancelAnimationFrame(animationFrame);
-                }
-            });
-
-            function startMovement() {
-                function move() {
-                    if (!isActive) return;
-
-                    currentX += velocityX;
-                    currentY += velocityY;
-
-                    // Keep cursor within viewport
-                    currentX = Math.max(10, Math.min(window.innerWidth - 10, currentX));
-                    currentY = Math.max(10, Math.min(window.innerHeight - 10, currentY));
-
-                    cursorDot.style.left = currentX + 'px';
-                    cursorDot.style.top = currentY + 'px';
-
-                    // Highlight dot under cursor
-                    const element = document.elementFromPoint(currentX, currentY);
-                    document.querySelectorAll('.day-dot').forEach(dot => {
-                        dot.style.transform = '';
-                        dot.style.zIndex = '';
-                    });
-
-                    if (element && element.classList.contains('day-dot')) {
-                        element.style.transform = 'scale(2.5)';
-                        element.style.zIndex = '100';
-                    }
-
-                    animationFrame = requestAnimationFrame(move);
-                }
-                move();
-            }
-        }
     </script>
 </body>
 
