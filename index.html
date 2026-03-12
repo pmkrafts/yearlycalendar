@@ -674,7 +674,11 @@
             <div class="days-grid" id="yearGrid"></div>
         </div>
 
-        <audio id="audioPlayer" style="width: 100%; margin-top: 30px;" controls>
+        <div style="margin-top: 30px; display: flex; gap: 10px; justify-content: center;">
+            <button onclick="document.getElementById('audioPlayer').play()" style="padding: 10px 20px; background: var(--bg-secondary); color: var(--bg-primary); border: none; border-radius: 8px; cursor: pointer; font-size: 1rem; font-weight: 500; color: var(--accent-strong);">PLAY</button>
+            <button onclick="document.getElementById('audioPlayer').pause()" style="padding: 10px 20px; background: var(--bg-secondary); color: var(--bg-primary); border: none; border-radius: 8px; cursor: pointer; font-size: 1rem; font-weight: 500; color: var(--accent-strong);">STOP</button>
+        </div>
+        <audio id="audioPlayer" style="display: none;" loop autoplay onloadeddata="this.play()">
             <source src="theaudio.mp3" type="audio/mpeg">
         </audio>
     </div>
